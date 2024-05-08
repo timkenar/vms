@@ -3,4 +3,5 @@ from .models import Host, Meeting
 
 # Register your models here
 admin.site.register(Host)
-admin.site.register(Meeting)
+#Added a subsection to Modify admin depending on privilledges 
+admin.site.register(Meeting, ModifyAdmin)
