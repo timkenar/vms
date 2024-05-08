@@ -67,22 +67,23 @@ class VisitorIDCardView(RetrieveAPIView):
             
             # Ensure the visitor image path exists
             if instance.visitor_image:
-                visitor_image_path = instance.visitor_image.path
+                # Read the visitor image file and get binary data
+                with open(instance.visitor_image.path, "rb") as f:
+                    visitor_image_data = f.read()
             else:
                 return Response({'error': 'Visitor image path does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
             
-            # Generate ID card PDF
-            id_card_buffer = VisitorIDCardGenerator.generate(visitor_name=visitor_name, visitor_image_path=visitor_image_path)
+            # Generate ID card PNG
+            id_card_buffer = VisitorIDCardGenerator.generate(visitor_name=visitor_name, visitor_image_data=visitor_image_data)
 
-            # Return ID card PDF in response
-            return Response({'id_card': id_card_buffer.getvalue()}, status=status.HTTP_200_OK)
+            # Return ID card PNG in response
+            return HttpResponse(id_card_buffer.getvalue(), content_type='image/png')
 
         except ObjectDoesNotExist:
             return Response({'error': 'Meeting object does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 # class VisitorIDCardView(RetrieveAPIView):
 #     serializer_class = VisitorIDCardSerializer
