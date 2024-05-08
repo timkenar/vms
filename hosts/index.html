@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Capture</title>
+</head>
+<body>
+    <form id="visitorForm">
+        <input type="text" name="visitor_name" placeholder="Visitor Name" required>
+        <input type="email" name="visitor_email" placeholder="Visitor Email">
+        <input type="tel" name="visitor_phone" placeholder="Visitor Phone">
+        <button type="button" id="captureButton">Capture Image</button>
+        <canvas id="canvas" width="640" height="480"></canvas>
+        <input type="hidden" id="imageData" name="visitor_image">
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        const captureButton = document.getElementById('captureButton');
+        const canvas = document.getElementById('canvas');
+        const imageDataInput = document.getElementById('imageData');
+        const visitorForm = document.getElementById('visitorForm');
+
+        captureButton.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                await video.play();
+
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const imageDataURL = canvas.toDataURL('image/jpeg');
+                imageDataInput.value = imageDataURL;
+
+                stream.getTracks().forEach(track => track.stop());
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+            }
+        });
+
+        visitorForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(visitorForm);
+            
+            try {
+                const response = await fetch('/api/meetings/', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    console.log('Meeting details submitted successfully');
+                } else {
+                    console.error('Failed to submit meeting details');
+                }
+            } catch (error) {
+                console.error('Error submitting meeting details:', error);
+            }
+        });
+    </script>
+</body>
+</html>
