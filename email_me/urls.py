@@ -28,6 +28,7 @@ router.register(r'meetings', MeetingViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('generate-id-card/<int:pk>/', VisitorIDCardView.as_view(), name = 'generate_id_card'),
+    path('api/', include('accounts.urls')),
     path('', include('send.urls')),
     path('', include(router.urls)),
     
