@@ -122,3 +122,73 @@ class VisitorIDCardView(RetrieveAPIView):
 #             return Response(id_card_data, status=status.HTTP_200_OK)
 #         else:
 #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# visitors/views.py
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Visitor
+from django.db.models import Count, DateTimeField
+from django.db.models.functions import Trunc
+import datetime
+
+# visitors/views.py
+from rest_framework import viewsets
+from .models import Visitor
+from .serializers import VisitorSerializer
+
+# class VisitorViewSet(viewsets.ModelViewSet):
+#     queryset = Visitor.objects.all()
+#     serializer_class = VisitorSerializer
+
+
+@api_view(['GET'])
+
+def visitor_statistics(request):
+    today = datetime.date.today()
+    total_visitors = Visitor.objects.count()
+    today_visitors = Visitor.objects.filter(check_in__date=today).count()
+
+    # Additional analytics if needed
+    visitors_per_day = Visitor.objects.annotate(day=Trunc('check_in', 'day', output_field=DateTimeField())) \
+                                      .values('day') \
+                                      .annotate(count=Count('id')) \
+                                      .order_by('day')
+
+    data = {
+        'total_visitors': total_visitors,
+        'today_visitors': today_visitors,
+        'visitors_per_day': list(visitors_per_day),
+    }
+    return Response(data)
+
+#For qr code...
+
+
+import qrcode
+from io import BytesIO
+from django.http import HttpResponse
+from rest_framework.decorators import api_view
+
+@api_view(['GET'])
+def generate_qr_code(request):
+    data = request.query_params.get('data', 'http://127.0.0.1:8000/meetings/1')
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+
+    qr.add_data(data)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill="black", back_color="white")
+
+    # Create a BytesIO buffer to hold the image data
+    buffer = BytesIO()
+    img.save(buffer)
+    buffer.seek(0)
+
+    return HttpResponse(buffer, content_type="image/png")

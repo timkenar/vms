@@ -13,6 +13,12 @@ from rest_framework.authtoken.models import Token
 
 from .models import CustomUser
 
+
+
+# class CustomViewSet(viewsets.ModelViewSet):
+#     queryset = Visitor.objects.all()
+#     serializer_class = VisitorSerializer
+
 @api_view(['POST'])
 def register_user(request):
     if request.method == 'POST':

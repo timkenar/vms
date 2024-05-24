@@ -21,9 +21,12 @@ from hosts.views import *
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 router = DefaultRouter()
 router.register(r'hosts', HostViewSet)
 router.register(r'meetings', MeetingViewSet)
+# router.register(r'visitors', VisitorViewSet)
+# router.register(r'accounts', CustomUser)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,7 +34,11 @@ urlpatterns = [
     path('api/', include('accounts.urls')),
     path('', include('send.urls')),
     path('', include(router.urls)),
+    path('analytics/', visitor_statistics, name='visitor_statistics'),
+    path('generate_qr_code/', generate_qr_code, name='generate_qr_code'),
     
 ]
 
 urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
